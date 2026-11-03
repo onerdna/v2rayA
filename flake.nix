@@ -95,7 +95,6 @@
     {
       packages = forAllSystems mkPackages;
 
-      # pkgs.v2raya-hwid, for use in environment.systemPackages etc.
       overlays.default = final: prev: {
         v2raya = (mkPackages final).v2raya;
       };
@@ -103,6 +102,8 @@
       nixosModules.default = { config, lib, pkgs, ... }:
         let cfg = config.services.v2raya; in
         {
+          disabledModules = [ "${modulesPath}/services/networking/v2raya.nix" ];
+
           options.services.v2raya = {
             enable = lib.mkEnableOption "v2rayA";
             package = lib.mkOption {

@@ -99,7 +99,7 @@
         v2raya = (mkPackages final).v2raya;
       };
 
-      nixosModules.default = { config, lib, pkgs, ... }:
+      nixosModules.default = { config, lib, pkgs, modulesPath, ... }:
         let cfg = config.services.v2raya; in
         {
           disabledModules = [ "${modulesPath}/services/networking/v2raya.nix" ];

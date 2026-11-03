@@ -7,8 +7,6 @@ import (
 	"github.com/v2rayA/v2rayA/conf"
 	"net/http"
 	neturl "net/url"
-
-	"github.com/v2rayA/v2rayA/conf"
 )
 
 func HttpGetUsingSpecificClient(c *http.Client, url string) (resp *http.Response, err error) {

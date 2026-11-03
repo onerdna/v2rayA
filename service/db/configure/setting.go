@@ -47,7 +47,6 @@ type Setting struct {
 	DnsCacheMaxTTL   int  `json:"dnsCacheMaxTTL"`   // 最大 TTL，默认 86400
 	DnsPrefetch      bool `json:"dnsPrefetch"`      // 启用预取，默认 true
 	DnsNegativeCache bool `json:"dnsNegativeCache"` // 启用负缓存，默认 true
-	AntiPollution                      Antipollution   `json:"antipollution"`
 	SubscriptionHwidEnabled             bool            `json:"subscriptionHwidEnabled"` // when true, send HWID headers with subscription requests
 	TunFakeIP                          bool            `json:"tunFakeIP"`
 	TunIPv6                            bool            `json:"tunIPv6"`
@@ -71,7 +70,6 @@ func NewSetting() (setting *Setting) {
 		IpForward:                          ipforward.IsIpForwardOn(),
 		PortSharing:                        false,
 		TransparentType:                    TransparentRedirect,
-<<<<<<< HEAD
 		TproxyExcludedInterfaces:           "docker*,veth*,wg*,ppp*,br-*",
 		TunAutoRoute:                       true,
 		// 新 DNS 模块默认值
@@ -82,12 +80,9 @@ func NewSetting() (setting *Setting) {
 		DnsCacheMaxTTL:   86400,
 		DnsPrefetch:      true,
 		DnsNegativeCache: true,
-=======
-		AntiPollution:                      AntipollutionClosed,
 		SubscriptionHwidEnabled:             true,
 		TunFakeIP:                          true,
 		TunIPv6:                            false,
->>>>>>> hwid-feature
 	}
 }
 

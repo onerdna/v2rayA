@@ -254,17 +254,13 @@ export default {
       tcpFastOpen:
         "简化TCP握手流程以加速建立连接，可能会增加封包的特征。若系统不支持可能会导致无法正常连接。",
       mux: "复用TCP连接以减少握手次数，但会影响吞吐量大的使用场景，如观看视频、下载、测速。当前仅支持vmess节点。可能会增加特征造成断流。",
-<<<<<<< HEAD
       grpcShouldWithTls: `gRPC 需要 TLS，已自动启用`,
-=======
       confirmEgressPorts: `<p>您正在对不同子网下的机器设置透明代理，请确认不走代理的出方向端口。</p>
                           <p>当前设置的端口白名单为：</p>
                           <p>TCP: {tcpPorts}</p>
                           <p>UDP: {udpPorts}</p>`,
       subscriptionHwidEnabled:
         "启用后，订阅请求将包含设备识别头（x-hwid、x-device-os、x-ver-os、x-device-model），供支持HWID的订阅服务使用。",
-      grpcShouldWithTls: `gRPC必须启用TLS`,
->>>>>>> hwid-feature
       ssPluginImpl:
         "★默认：使用 simple-obfs 时为等效传输层，v2ray-plugin 时为链式。" +
         "★链式：shadowsocks 流量会被转发至独立的插件。" +

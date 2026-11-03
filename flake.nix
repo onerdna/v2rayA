@@ -7,9 +7,8 @@
     let
       systems = [ "x86_64-linux" "aarch64-linux" "x86_64-darwin" "aarch64-darwin" ];
       forAllSystems = f: nixpkgs.lib.genAttrs systems (s: f nixpkgs.legacyPackages.${s});
-    in
-    {
-      packages = forAllSystems (pkgs:
+
+      mkPackages = pkgs:
         let
           inherit (pkgs) lib;
           src = lib.cleanSource ./.;
@@ -18,7 +17,6 @@
           # go.mod requires Go >= 1.27, newer than the default Go in nixpkgs
           buildGoModule = pkgs.buildGoModule.override { go = pkgs.go_1_27; };
 
-          # 1. GUI: yarn build writes to ../web (build.sh copies from $root/web)
           gui = pkgs.stdenv.mkDerivation {
             pname = "v2raya-gui";
             inherit version src;
@@ -44,25 +42,23 @@
             '';
           };
 
-          # 2. core (separate Go module under core/, package ./main)
           core = buildGoModule {
             pname = "v2raya-core";
             inherit version src;
             modRoot = "core";
             subPackages = [ "main" ];
-            vendorHash = "sha256-0jMl0unNB5Atau+yKO7n4bR/Y1qzOKSG16S0Cu4lDz8="; # replace after first build
+            vendorHash = "sha256-0jMl0unNB5Atau+yKO7n4bR/Y1qzOKSG16S0Cu4lDz8=";
             env.CGO_ENABLED = 0;
             ldflags = [ "-s" "-w" "-X main.Version=${version}" ];
             postInstall = "mv $out/bin/main $out/bin/v2raya_core";
             doCheck = false;
           };
 
-          # 3. service (Go module under service/, embeds the web dir)
           service = buildGoModule {
             pname = "v2raya";
             inherit version src;
             modRoot = "service";
-            vendorHash = "sha256-mtdhme2yzmXKywr4e7YReOpLl8dnpjjCFzjlKZxws1s="; # replace after first build
+            vendorHash = "sha256-mtdhme2yzmXKywr4e7YReOpLl8dnpjjCFzjlKZxws1s=";
             env.CGO_ENABLED = 0;
             ldflags = [
               "-s" "-w"
@@ -74,7 +70,6 @@
               cp -a ${gui}/. server/router/web/
               chmod -R u+w server/router/web
             '';
-            # binary is named after the module's last path element
             postInstall = ''
               if [ -e $out/bin/v2rayA ]; then mv $out/bin/v2rayA $out/bin/v2raya; fi
               if [ -e $out/bin/service ]; then mv $out/bin/service $out/bin/v2raya; fi
@@ -95,7 +90,60 @@
         {
           inherit gui core service v2raya;
           default = v2raya;
-        });
+        };
+    in
+    {
+      packages = forAllSystems mkPackages;
+
+      # pkgs.v2raya-hwid, for use in environment.systemPackages etc.
+      overlays.default = final: prev: {
+        v2raya-hwid = (mkPackages final).v2raya;
+      };
+
+      nixosModules.default = { config, lib, pkgs, ... }:
+        let cfg = config.services.v2raya-hwid; in
+        {
+          options.services.v2raya-hwid = {
+            enable = lib.mkEnableOption "v2rayA (HWID fork)";
+            package = lib.mkOption {
+              type = lib.types.package;
+              default = self.packages.${pkgs.stdenv.hostPlatform.system}.default;
+              defaultText = lib.literalExpression "v2raya-hwid.packages.<system>.default";
+              description = "The v2raya package to run.";
+            };
+            address = lib.mkOption {
+              type = lib.types.str;
+              default = "127.0.0.1:2017";
+              description = "Web UI listen address. The upstream default is 0.0.0.0:2017.";
+            };
+            openFirewall = lib.mkOption {
+              type = lib.types.bool;
+              default = false;
+              description = "Open the web UI port in the firewall.";
+            };
+          };
+
+          config = lib.mkIf cfg.enable {
+            systemd.services.v2raya-hwid = {
+              description = "v2rayA (HWID fork)";
+              after = [ "network.target" "nss-lookup.target" ];
+              wantedBy = [ "multi-user.target" ];
+              # tools used for transparent proxy
+              path = with pkgs; [ iptables nftables iproute2 bash ];
+              environment.V2RAYA_V2RAY_ASSETSDIR = "${cfg.package}/share/v2raya";
+              serviceConfig = {
+                ExecStart = "${lib.getExe cfg.package} --config /var/lib/v2raya --address ${cfg.address}";
+                StateDirectory = "v2raya"; # config + hwid.json live in /var/lib/v2raya
+                Restart = "on-failure";
+                LimitNOFILE = 1048576;
+                LimitNPROC = 512;
+              };
+            };
+
+            networking.firewall.allowedTCPPorts =
+              lib.mkIf cfg.openFirewall [ (lib.toInt (lib.last (lib.splitString ":" cfg.address))) ];
+          };
+        };
 
       devShells = forAllSystems (pkgs: {
         default = pkgs.mkShell {

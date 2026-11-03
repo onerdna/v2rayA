@@ -208,6 +208,7 @@ export default {
     tproxyExcludedInterfaces: "Excluded Interface Prefixes",
     tproxyExcludedInterfacesPlaceholder: "docker*, veth*, wg*, ppp*, br-*",
     tunAutoRoute: "Auto Route",
+    subscriptionHwidEnabled: "Send HWID with subscription requests",
     ipForwardOn: "IP Forward",
     portSharingOn: "Port Sharing",
     concurrency: "Concurrency",
@@ -261,7 +262,17 @@ export default {
       mux:
         "Multiplexing TCP connections to reduce the number of handshake, but it will affect the use cases with high throughput, such as watching videos, downloading, and test speed. " +
         "Risk of emphasizing characteristics of packets exists. Support vmess only now.",
+<<<<<<< HEAD
       grpcShouldWithTls: `gRPC requires TLS; TLS has been enabled`,
+=======
+      confirmEgressPorts: `<p>You are setting up transparent proxy across LANs, confirm egress port whitelist.</p>
+                          <p>Whitelist:</p>
+                          <p>TCP: {tcpPorts}</p>
+                          <p>UDP: {udpPorts}</p>`,
+      subscriptionHwidEnabled:
+        "When enabled, subscription requests will include device identification headers (x-hwid, x-device-os, x-ver-os, x-device-model) for providers that support HWID.",
+      grpcShouldWithTls: `gRPC must be with TLS`,
+>>>>>>> hwid-feature
       ssPluginImpl:
         "★default: 'transport' for simple-obfs, 'chained' for v2ray-plugin." +
         "★chained: shadowsocks traffic will be redirect to standalone plugin." +

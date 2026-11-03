@@ -203,7 +203,12 @@ func ResolveSubscriptionWithClient(source string, client *http.Client) (infos []
 		c.Timeout = 30 * time.Second
 	}
 
-	res, err := httpClient.HttpGetUsingSpecificClient(&c, source)
+	var res *http.Response
+	if configure.GetSettingNotNil().SubscriptionHwidEnabled {
+		res, err = httpClient.HttpGetSubscriptionWithClient(client, source)
+	} else {
+		res, err = httpClient.HttpGetUsingSpecificClient(client, source)
+	}
 	if err != nil {
 		return nil, "", err
 	}

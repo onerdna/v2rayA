@@ -97,18 +97,18 @@
 
       # pkgs.v2raya-hwid, for use in environment.systemPackages etc.
       overlays.default = final: prev: {
-        v2raya-hwid = (mkPackages final).v2raya;
+        v2raya = (mkPackages final).v2raya;
       };
 
       nixosModules.default = { config, lib, pkgs, ... }:
-        let cfg = config.services.v2raya-hwid; in
+        let cfg = config.services.v2raya; in
         {
-          options.services.v2raya-hwid = {
-            enable = lib.mkEnableOption "v2rayA (HWID fork)";
+          options.services.v2raya = {
+            enable = lib.mkEnableOption "v2rayA";
             package = lib.mkOption {
               type = lib.types.package;
               default = self.packages.${pkgs.stdenv.hostPlatform.system}.default;
-              defaultText = lib.literalExpression "v2raya-hwid.packages.<system>.default";
+              defaultText = lib.literalExpression "v2raya.packages.<system>.default";
               description = "The v2raya package to run.";
             };
             address = lib.mkOption {
@@ -124,8 +124,8 @@
           };
 
           config = lib.mkIf cfg.enable {
-            systemd.services.v2raya-hwid = {
-              description = "v2rayA (HWID fork)";
+            systemd.services.v2raya = {
+              description = "v2rayA";
               after = [ "network.target" "nss-lookup.target" ];
               wantedBy = [ "multi-user.target" ];
               # tools used for transparent proxy
